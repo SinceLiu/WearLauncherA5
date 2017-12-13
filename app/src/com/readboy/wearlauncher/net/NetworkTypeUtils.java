@@ -83,23 +83,23 @@ public class NetworkTypeUtils {
 
     /// M: Support 4G+ icon" @{
 	// remove by GongYong
-	/**
+
     public static int getDataNetTypeFromServiceState(int srcDataNetType, ServiceState sState){
         int destDataNetType = srcDataNetType;
-        if (destDataNetType == TelephonyManager.NETWORK_TYPE_LTE
-                || destDataNetType == TelephonyManager.NETWORK_TYPE_LTEA) {
-            if (sState != null){
-                destDataNetType = (sState.getProprietaryDataRadioTechnology() == 0 ?
-                        TelephonyManager.NETWORK_TYPE_LTE : TelephonyManager.NETWORK_TYPE_LTEA);
-            }
-        }
+//        if (destDataNetType == TelephonyManager.NETWORK_TYPE_LTE
+//                || destDataNetType == TelephonyManager.NETWORK_TYPE_LTEA) {
+//            if (sState != null){
+//                destDataNetType = (sState.getProprietaryDataRadioTechnology() == 0 ?
+//                        TelephonyManager.NETWORK_TYPE_LTE : TelephonyManager.NETWORK_TYPE_LTEA);
+//            }
+//        }
 
         Log.d(TAG, "getDataNetTypeFromServiceState:srcDataNetType = "
                 + srcDataNetType + ", destDataNetType " + destDataNetType);
 
         return destDataNetType;
     }
-	*/
+
     ///@}
 }
 

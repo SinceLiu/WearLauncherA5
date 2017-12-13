@@ -313,41 +313,41 @@ public class NetworkController extends BroadcastReceiver {
     void notifySignalsChangedCallbacks(NetworkSignalChangedCallback cb) {
         // only show wifi in the cluster if connected or if wifi-only
 		// remove by GongYong
-//        boolean wifiEnabled = mWifiEnabled && (mWifiConnected || !mHasMobileDataFeature);
-//        String wifiDesc = wifiEnabled ?
-//                mWifiSsid : null;
-//        boolean wifiIn = wifiEnabled && mWifiSsid != null
-//                && (mWifiActivity == WifiManager.DATA_ACTIVITY_INOUT
-//                || mWifiActivity == WifiManager.DATA_ACTIVITY_IN);
-//        boolean wifiOut = wifiEnabled && mWifiSsid != null
-//                && (mWifiActivity == WifiManager.DATA_ACTIVITY_INOUT
-//                || mWifiActivity == WifiManager.DATA_ACTIVITY_OUT);
-//        cb.onWifiSignalChanged(wifiEnabled, mQSWifiIconId, wifiIn, wifiOut,
-//                mContentDescriptionWifi, wifiDesc);
-//
-//        boolean mobileIn = mDataConnected && (mDataActivity == TelephonyManager.DATA_ACTIVITY_INOUT
-//                || mDataActivity == TelephonyManager.DATA_ACTIVITY_IN);
-//        boolean mobileOut = mDataConnected && (mDataActivity == TelephonyManager.DATA_ACTIVITY_INOUT
-//                || mDataActivity == TelephonyManager.DATA_ACTIVITY_OUT);
-//        int networkType = NetworkTypeUtils.getNetworkTypeIcon(mServiceState,mConfig,hasService());
-//        if (isEmergencyOnly()) {
-//            cb.onMobileDataSignalChanged(false, mQSPhoneSignalIconId,
-//                    mContentDescriptionPhoneSignal, networkType,mQSDataTypeIconId, mobileIn, mobileOut,
-//                    mContentDescriptionDataType, null);
-//        } else {
-//            if (mIsWimaxEnabled && mWimaxConnected) {
-//                // Wimax is special
-//                cb.onMobileDataSignalChanged(true, mQSPhoneSignalIconId,
-//                        mContentDescriptionPhoneSignal,networkType, mQSDataTypeIconId, mobileIn, mobileOut,
-//                        mContentDescriptionDataType, mSimName/*mNetworkName*/);
-//            } else {
-//                // Normal mobile data
-//                cb.onMobileDataSignalChanged(mHasMobileDataFeature, mQSPhoneSignalIconId,
-//                        mContentDescriptionPhoneSignal,networkType, mQSDataTypeIconId, mobileIn, mobileOut,
-//                        mContentDescriptionDataType, mSimName/*mNetworkName*/);
-//            }
-//        }
-//        cb.onAirplaneModeChanged(mAirplaneMode);
+        boolean wifiEnabled = mWifiEnabled && (mWifiConnected || !mHasMobileDataFeature);
+        String wifiDesc = wifiEnabled ?
+                mWifiSsid : null;
+        boolean wifiIn = wifiEnabled && mWifiSsid != null
+                && (mWifiActivity == WifiManager.WIFI_STATE_ENABLED
+                || mWifiActivity == WifiManager.WIFI_STATE_ENABLING);
+        boolean wifiOut = wifiEnabled && mWifiSsid != null
+                && (mWifiActivity == WifiManager.WIFI_STATE_DISABLED
+                || mWifiActivity == WifiManager.WIFI_STATE_DISABLING);
+        cb.onWifiSignalChanged(wifiEnabled, mQSWifiIconId, wifiIn, wifiOut,
+                mContentDescriptionWifi, wifiDesc);
+
+        boolean mobileIn = mDataConnected && (mDataActivity == TelephonyManager.DATA_ACTIVITY_INOUT
+                || mDataActivity == TelephonyManager.DATA_ACTIVITY_IN);
+        boolean mobileOut = mDataConnected && (mDataActivity == TelephonyManager.DATA_ACTIVITY_INOUT
+                || mDataActivity == TelephonyManager.DATA_ACTIVITY_OUT);
+        int networkType = NetworkTypeUtils.getNetworkTypeIcon(mServiceState,mConfig,hasService());
+        if (isEmergencyOnly()) {
+            cb.onMobileDataSignalChanged(false, mQSPhoneSignalIconId,
+                    mContentDescriptionPhoneSignal, networkType,mQSDataTypeIconId, mobileIn, mobileOut,
+                    mContentDescriptionDataType, null);
+        } else {
+            if (mIsWimaxEnabled && mWimaxConnected) {
+                // Wimax is special
+                cb.onMobileDataSignalChanged(true, mQSPhoneSignalIconId,
+                        mContentDescriptionPhoneSignal,networkType, mQSDataTypeIconId, mobileIn, mobileOut,
+                        mContentDescriptionDataType, mSimName/*mNetworkName*/);
+            } else {
+                // Normal mobile data
+                cb.onMobileDataSignalChanged(mHasMobileDataFeature, mQSPhoneSignalIconId,
+                        mContentDescriptionPhoneSignal,networkType, mQSDataTypeIconId, mobileIn, mobileOut,
+                        mContentDescriptionDataType, mSimName/*mNetworkName*/);
+            }
+        }
+        cb.onAirplaneModeChanged(mAirplaneMode);
     }
 
     public void setStackedMode(boolean stacked) {
@@ -414,19 +414,17 @@ public class NetworkController extends BroadcastReceiver {
         }
 
 		// remove by GongYong
-		/**
         @Override
         public void onServiceStateChanged(ServiceState state) {
             mServiceState = state;
-            mDataNetType =
-                    NetworkTypeUtils.getDataNetTypeFromServiceState(mDataNetType, mServiceState);
+            mDataNetType = NetworkTypeUtils.getDataNetTypeFromServiceState(mDataNetType, mServiceState);
             getVolteStatusIcon();
             updateTelephonySignalStrength();
             updateDataNetType();
             updateDataIcon();
             refreshViews();
         }
-		*/
+
 
         @Override
         public void onCallStateChanged(int state, String incomingNumber) {
@@ -449,8 +447,7 @@ public class NetworkController extends BroadcastReceiver {
             mDataState = state;
             mDataNetType = networkType;
             // remove by GongYong
-			//mDataNetType =
-            //        NetworkTypeUtils.getDataNetTypeFromServiceState(mDataNetType, mServiceState);
+			mDataNetType = NetworkTypeUtils.getDataNetTypeFromServiceState(mDataNetType, mServiceState);
             getVolteStatusIcon();
             updateDataNetType();
             updateDataIcon();
