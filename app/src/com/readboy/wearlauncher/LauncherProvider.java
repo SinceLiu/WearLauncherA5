@@ -51,7 +51,6 @@ public class LauncherProvider extends ContentProvider {
     @Override
     public boolean onCreate() {
         mOpenHelper = new DatabaseHelper(getContext());
-        ((LauncherApplication) getContext()).setLauncherProvider(this);
         return true;
     }
 

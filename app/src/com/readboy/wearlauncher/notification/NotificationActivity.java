@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.graphics.Rect;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.support.annotation.Nullable;
@@ -28,6 +27,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.android.internal.statusbar.IStatusBarService;
@@ -100,10 +100,10 @@ public class NotificationActivity extends Activity {
             if (datas.length > 0) {
                 mAdapter.updateData(datas);
                 mAdapter.notifyDataSetChanged();
-            }else {
+            } else {
                 showNoMsgView();
             }
-        }else {
+        } else {
             Log.e(TAG, "initData: NotificationMonitor == null");
             showNoMsgView();
         }
@@ -344,9 +344,13 @@ public class NotificationActivity extends Activity {
 
     private class NotificationAdapter extends RecyclerView.Adapter<NotificationViewHolder> {
         private static final String TAG = "NotificationAdapter";
+        private static final int ITEM_TYPE_NORMAL = 0;
+        private static final int ITEM_TYPE_PROGRESS = 1;
 
+        //过滤前
         private ArrayMap<String, StatusBarNotification> mNotificationsMap = new ArrayMap<>();
-        private ArrayList<StatusBarNotification> mStatusBarNotifications = new ArrayList<>();
+        //过滤后，界面显示的内容
+        private ArrayList<StatusBarNotification> mNotificationList = new ArrayList<>();
 
         private final LayoutInflater mInflater;
 
@@ -356,23 +360,42 @@ public class NotificationActivity extends Activity {
 
         @Override
         public NotificationViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = mInflater.inflate(R.layout.item_notification, parent, false);
-            return new NotificationViewHolder(view);
+            if (viewType == ITEM_TYPE_NORMAL) {
+                View view = mInflater.inflate(R.layout.item_notification, parent, false);
+                return new NotificationViewHolder(view);
+            } else {
+                View view = mInflater.inflate(R.layout.item_notification_progress, parent, false);
+                return new NotificationProgressViewHolder(view);
+            }
         }
 
         @Override
         public void onBindViewHolder(NotificationViewHolder holder, int position) {
-            holder.bindNotification(mStatusBarNotifications.get(position));
+            holder.bindNotification(mNotificationList.get(position));
         }
 
         @Override
         public int getItemCount() {
-            return mStatusBarNotifications == null ? 0 : mStatusBarNotifications.size();
+            return mNotificationList == null ? 0 : mNotificationList.size();
         }
 
         @Override
         public long getItemId(int position) {
-            return mStatusBarNotifications.get(position).getId();
+            return mNotificationList.get(position).getId();
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            StatusBarNotification statusBarNotification = mNotificationList.get(position);
+            Notification notification = statusBarNotification.getNotification();
+            int progress = notification.extras.getInt(Notification.EXTRA_PROGRESS, -1);
+            int maxProgress = notification.extras.getInt(Notification.EXTRA_PROGRESS_MAX, -1);
+            Log.e(TAG, "getItemViewType: progress = " + progress + ", maxProgress = " + maxProgress);
+            if (progress >= 0 && maxProgress > 0) {
+                return ITEM_TYPE_PROGRESS;
+            } else {
+                return ITEM_TYPE_NORMAL;
+            }
         }
 
         void updateData(StatusBarNotification[] datas) {
@@ -387,9 +410,9 @@ public class NotificationActivity extends Activity {
             }
             Log.e(TAG, "updateData: size = " + mNotificationsMap.size());
             filterAndSort();
-            if (mStatusBarNotifications.size() > 0){
+            if (mNotificationList.size() > 0) {
                 hideNoMsgView();
-            }else {
+            } else {
                 showNoMsgView();
             }
 
@@ -405,21 +428,21 @@ public class NotificationActivity extends Activity {
 
             //region find position in List
             int pointer = -1;
-            int size = mStatusBarNotifications.size();
+            int size = mNotificationList.size();
             for (int i = 0; i < size; i++) {
-                if (notification.getKey().equals(mStatusBarNotifications.get(i).getKey())) {
+                if (notification.getKey().equals(mNotificationList.get(i).getKey())) {
                     Log.e(TAG, "removeItem: equals");
                     pointer = i;
                     break;
                 }
-                if (notification.getKey().contentEquals(mStatusBarNotifications.get(i).getKey())) {
+                if (notification.getKey().contentEquals(mNotificationList.get(i).getKey())) {
                     Log.e(TAG, "removeItem: content equals");
                     pointer = i;
                     break;
                 }
             }
             if (pointer >= 0) {
-                mStatusBarNotifications.remove(pointer);
+                mNotificationList.remove(pointer);
                 notifyItemRemoved(pointer);
                 Log.e(TAG, "removeItem: notifyItemRemoved");
             } else {
@@ -437,7 +460,7 @@ public class NotificationActivity extends Activity {
         }
 
         private void filterAndSort() {
-            mStatusBarNotifications.clear();
+            mNotificationList.clear();
             final int N = mNotificationsMap.size();
             for (int i = 0; i < N; i++) {
                 StatusBarNotification sbn = mNotificationsMap.valueAt(i);
@@ -445,10 +468,10 @@ public class NotificationActivity extends Activity {
                     continue;
                 }
 
-                mStatusBarNotifications.add(sbn);
+                mNotificationList.add(sbn);
             }
 
-            Collections.sort(mStatusBarNotifications, mComparator);
+            Collections.sort(mNotificationList, mComparator);
         }
 
         /**
@@ -458,7 +481,7 @@ public class NotificationActivity extends Activity {
          */
         private boolean shouldFilterOut(StatusBarNotification notification) {
             String type = notification.getNotification().extras.getString("extra_type", "");
-            Log.e(TAG, "shouldFilterOut: key = " + notification.getKey());
+            Log.e(TAG, "shouldFilterOut: key = " + notification.getKey() + ", type = " + type);
             if ("readboy".equalsIgnoreCase(type)) {
                 return false;
             }
@@ -467,7 +490,7 @@ public class NotificationActivity extends Activity {
 
         StatusBarNotification getStatusBarNotification(int position) {
             try {
-                return mStatusBarNotifications.get(position);
+                return mNotificationList.get(position);
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.e(TAG, "getStatusBarNotification: e:" + e.toString() + ", position = " + position);
@@ -557,5 +580,30 @@ public class NotificationActivity extends Activity {
         }
     }
 
+    class NotificationProgressViewHolder extends NotificationViewHolder {
+
+        private ProgressBar mProgressBar;
+        private TextView mProgressTv;
+
+        NotificationProgressViewHolder(View itemView) {
+            super(itemView);
+            mProgressBar = (ProgressBar) itemView.findViewById(R.id.notification_progress_bar);
+            mProgressTv = (TextView) itemView.findViewById(R.id.notification_progress);
+
+        }
+
+        @Override
+        void bindNotification(StatusBarNotification statusBarNotification) {
+            super.bindNotification(statusBarNotification);
+            Notification notification = statusBarNotification.getNotification();
+            int progress = notification.extras.getInt(Notification.EXTRA_PROGRESS, 0);
+            int maxProgress = notification.extras.getInt(Notification.EXTRA_PROGRESS_MAX, -1);
+            mProgressBar.setMax(maxProgress);
+            mProgressBar.setProgress(progress);
+            Log.e(TAG, "bindNotification: progress = " + progress);
+            int percent = progress * 100 / maxProgress;
+            mProgressTv.setText(String.valueOf(percent + "%"));
+        }
+    }
 
 }

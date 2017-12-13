@@ -14,7 +14,6 @@ import java.util.Calendar;
 
 
 public class WatchDialTypeB extends DialBaseLayout {
-    private DigitClock mDigitClock;
 
     public WatchDialTypeB(Context context) {
         super(context);
@@ -28,11 +27,21 @@ public class WatchDialTypeB extends DialBaseLayout {
     }
 
     @Override
+    public void onPause() {
+        mDigitClock.setTimePause();
+    }
+
+    @Override
+    public void onResume() {
+        mDigitClock.setTimeRunning();
+    }
+
+    @Override
     public void addChangedCallback() {
         addCallUnreadChangedCallback();
         addDateChangedCallback();
         addWeTalkUnreadChangedCallback();
-        mDigitClock.setTimeRunning();
+        //mDigitClock.setTimeRunning();
     }
 
     @Override

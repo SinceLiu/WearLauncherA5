@@ -34,8 +34,6 @@ public class LauncherApplication extends Application {
     private IconCache mIconCache;
     private static boolean bIsTouchEnable = true;
     private static long mSetTouchEnableTime = 0;
-    private static float sScreenDensity;
-    WeakReference<LauncherProvider> mLauncherProvider;
 
 	private NetworkController mNetworkController;
 	private BluetoothController mBluetoothController;
@@ -44,29 +42,22 @@ public class LauncherApplication extends Application {
 
     private WatchController mWatchController;
 
-    LauncherSharedPrefs sharedPrefs;
     static LauncherApplication mApplication;
 
     @Override
     public void onCreate() {
         super.onCreate();
-
         mApplication = this;
-        // set sIsScreenXLarge and sScreenDensity *before* creating icon cache
-        sScreenDensity = getResources().getDisplayMetrics().density;
 
         mIconCache = new IconCache(this);
 
         mNetworkController = new NetworkController(this);
         mBluetoothController = new BluetoothController(this);
         mBluetoothController.resume();
-        
         mAlarmController = new AlarmController(this);
         mAlarmController.resume();
-
         mLocationControllerImpl = new LocationControllerImpl(this);
 
-        sharedPrefs = new LauncherSharedPrefs(this);
         mWatchController = new WatchController(this);
     }
 
@@ -76,7 +67,9 @@ public class LauncherApplication extends Application {
     @Override
     public void onTerminate() {
         super.onTerminate();
-        
+
+        mNetworkController.unregisterReceiver();
+        mLocationControllerImpl.unregisterReceiver();
         mBluetoothController.pause();
         mAlarmController.pause();
     }
@@ -85,18 +78,8 @@ public class LauncherApplication extends Application {
         return mApplication;
     }
 
-
     public IconCache getIconCache() {
         return mIconCache;
-    }
-
-
-   void setLauncherProvider(LauncherProvider provider) {
-        mLauncherProvider = new WeakReference<LauncherProvider>(provider);
-    }
-
-    LauncherProvider getLauncherProvider() {
-        return mLauncherProvider.get();
     }
 
     public static void setTouchEnable(boolean enable){
@@ -105,15 +88,6 @@ public class LauncherApplication extends Application {
     }
     public static boolean isTouchEnable() {
         return bIsTouchEnable || (Math.abs(System.currentTimeMillis() - mSetTouchEnableTime) > 1000);
-    }
-
-    public static boolean isScreenLandscape(Context context) {
-        return context.getResources().getConfiguration().orientation ==
-            Configuration.ORIENTATION_LANDSCAPE;
-    }
-
-    public static float getScreenDensity() {
-        return sScreenDensity;
     }
     
     public NetworkController getNetworkController(){
@@ -131,8 +105,6 @@ public class LauncherApplication extends Application {
     public AlarmController getAlarmController(){
     	return mAlarmController;
     }
-
-    public LauncherSharedPrefs getSharedPrefs(){return  sharedPrefs;}
 
     public LocationControllerImpl getLocationControllerImpl(){
         return mLocationControllerImpl;

@@ -2,6 +2,7 @@ package com.readboy.wearlauncher.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
@@ -62,6 +63,8 @@ public abstract class DialBaseLayout extends RelativeLayout implements View.OnCl
 
     public abstract void addChangedCallback();
     public abstract void setButtonEnable();
+    public abstract void onPause();
+    public abstract void onResume();
 
     public void addDateChangedCallback(){
         mWatchController.addDateChangedCallback(this);
@@ -123,7 +126,6 @@ public abstract class DialBaseLayout extends RelativeLayout implements View.OnCl
 
     @Override
     public void onDateChange(int year, int month, int day, int week) {
-
     }
 
     @Override

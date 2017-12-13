@@ -7,113 +7,55 @@ import android.content.SharedPreferences;
  * Created by GuanJiaYin on 16/11/21.
  */
 
-public class LauncherSharedPrefs implements SharedPreferences.OnSharedPreferenceChangeListener{
+public class LauncherSharedPrefs {
     private static final String TAG = "Launcher.LauncherSharedPrefs";
-    private static final boolean LOGD = true;
-    private String shared_name = "settings";
-    private Context mContext;
+    private static String SHARED_NAME = "settings";
+    private static final String WATCHTYPE = "watchtype";
 
-    private SharedPreferences preferences;
-
-    private SharedPreferences.Editor editor;
-    /**
-     * 学习模式
-     */
-    public static String ModeLearnKey = "ModeLearnKey";
-    /**
-     * 运动模式
-     */
-    public static String ModeSportKey = "ModeSportKey";
-    /**
-     * 个性模式
-     */
-    public static String ModePersonalKey = "ModePersonalKey";
-    /**
-     * 当前模式（学习模式、运动模式、个性模式）
-     */
-    public static String CurrentModeKey = "CurrentModeKey";
-
-    public static final String WATCHTYPE = "watchtype";
-
-    private SharedPreferences.OnSharedPreferenceChangeListener listener;
-
-    public LauncherSharedPrefs(Context context){
-        mContext = context;
-        preferences = mContext.getSharedPreferences(shared_name,Context.MODE_PRIVATE);
-
-        editor = preferences.edit();
-
+    public static int getWatchType(Context context){
+        return getInt(context,WATCHTYPE);
     }
 
-    /**
-     * 获取当前模式
-     * @return
-     */
-    public String getCurrentMode(){
-        return preferences.getString(CurrentModeKey,ModeLearnKey);
+    public static void setWatchtype(Context context,int watchtype){
+        putInt(context,WATCHTYPE,watchtype);
     }
 
-    /**
-     * 设置当前模式
-     * @param mode
-     */
-    public void setCurrentMode(String mode){
-        editor.putString(CurrentModeKey,mode);
+    public static long getLong(Context context, String string) {
+        SharedPreferences preferences = context.getSharedPreferences(SHARED_NAME, 0);
+        long value = preferences.getLong(string, 0);
+        return value;
+    }
+
+    public static void putLong(Context context, String string, long value) {
+        SharedPreferences preferences = context.getSharedPreferences(SHARED_NAME, 0);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putLong(string, value);
         editor.commit();
     }
 
-    public void registerChangeListener(SharedPreferences.OnSharedPreferenceChangeListener listener){
-        preferences.registerOnSharedPreferenceChangeListener(this);
-        this.listener = listener;
-    }
-    public void unregisterChangeListener(){
-        preferences.unregisterOnSharedPreferenceChangeListener(this);
+    public static int getInt(Context context, String string) {
+        SharedPreferences preferences = context.getSharedPreferences(SHARED_NAME, Context.MODE_PRIVATE);
+        int value = preferences.getInt(string, 0);
+        return value;
     }
 
-    /**
-     * 获取表盘类型
-     * @param mode
-     * @return
-     */
-    public int getDialIndex(String mode){
-        int dialIndex = preferences.getInt(mode,-1);
-        if (dialIndex == -1){//未设置，默认各个模式的初始表盘
-            if(mode.equals(ModeLearnKey)){
-                return 0;
-            }
-            else if(mode.equals(ModeSportKey)){
-                return 2;
-            }
-            else if(mode.equals(ModePersonalKey)){
-                return 4;
-            }
-        }
-        return dialIndex;//返回设置后的表盘
-    }
-
-    /**
-     * 设置表盘类型
-     * @param mode
-     * @param index
-     */
-    public void  setDialModeType(String mode,int index){
-        editor.putInt(mode,index);
+    public static void putInt(Context context, String string, int value) {
+        SharedPreferences preferences = context.getSharedPreferences(SHARED_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt(string, value);
         editor.commit();
     }
 
-    public int getWatchType(){
-        return preferences.getInt(WATCHTYPE,0);
+    public static String getString(Context context, String string) {
+        SharedPreferences preferences = context.getSharedPreferences(SHARED_NAME, Context.MODE_PRIVATE);
+        String value = preferences.getString(string, null);
+        return value;
     }
 
-    public void setWatchtype(int watchtype){
-        editor.putInt(WATCHTYPE,watchtype);
+    public static void putString(Context context, String string, String value) {
+        SharedPreferences preferences = context.getSharedPreferences(SHARED_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(string, value);
         editor.commit();
     }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-        this.listener.onSharedPreferenceChanged(sharedPreferences,s);
-    }
-
-
 }

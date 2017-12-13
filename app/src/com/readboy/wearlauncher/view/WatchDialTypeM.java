@@ -52,12 +52,21 @@ public class WatchDialTypeM extends DialBaseLayout{
     }
 
     @Override
+    public void onPause() {
+        mDigitClock.setTimePause();
+    }
+
+    @Override
+    public void onResume() {
+        mDigitClock.setTimeRunning();
+    }
+
+    @Override
     public void addChangedCallback(){
         addCallUnreadChangedCallback();
         addDateChangedCallback();
         addWeTalkUnreadChangedCallback();
-        mDigitClock.setTimeRunning();
-//        mAnalogClock.setTimeRunning();
+        //mDigitClock.setTimeRunning();
     }
 
     @Override

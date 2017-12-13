@@ -2,6 +2,7 @@ package com.readboy.wearlauncher.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.readboy.wearlauncher.R;
@@ -29,9 +30,19 @@ public class WatchDialTypeG extends DialBaseLayout {
     }
 
     @Override
+    public void onPause() {
+        mDigitClock.setTimePause();
+    }
+
+    @Override
+    public void onResume() {
+        mDigitClock.setTimeRunning();
+    }
+
+    @Override
     public void addChangedCallback() {
         addDateChangedCallback();
-        mDigitClock.setTimeRunning();
+        //mDigitClock.setTimeRunning();
     }
 
     @Override

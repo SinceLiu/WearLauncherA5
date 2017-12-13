@@ -5,12 +5,18 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import com.antonyt.infiniteviewpager.GalleryTransformer;
 import com.antonyt.infiniteviewpager.InfinitePagerAdapter;
@@ -54,7 +60,6 @@ public class WatchDials extends FrameLayout {
     public static final int ANIMATE_STATE_CLOSED = 4;
     public static int mWatchDialsStatus = ANIMATE_STATE_IDLE;
     private Context mContext;
-    private LauncherSharedPrefs mSharedPrefs;
 
     private ObjectAnimator mOpenCloseAnimator;
 
@@ -75,9 +80,8 @@ public class WatchDials extends FrameLayout {
     public WatchDials(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mContext = context;
-        mSharedPrefs = ((LauncherApplication)context.getApplicationContext()).getSharedPrefs();
 
-        mLastDialIndex = mSharedPrefs.getWatchType();
+        mLastDialIndex = LauncherSharedPrefs.getWatchType(mContext);
     }
 
     public static WatchDials fromXml(Context context) {
@@ -136,6 +140,7 @@ public class WatchDials extends FrameLayout {
                 }
                 setLayerType(LAYER_TYPE_NONE, null);
                 mWatchDialsStatus = ANIMATE_STATE_CLOSED;
+                System.gc();
             }
             @Override
             public void onAnimationStart(Animator animation) {
@@ -147,9 +152,56 @@ public class WatchDials extends FrameLayout {
         oa.start();
     }
 
-    public void setChooseModeType(){
+    private void setChooseModeType(){
         int type = mViewPager.getCurrentItem();
-        mSharedPrefs.setWatchtype(type);
+        LauncherSharedPrefs.setWatchtype(mContext,type);
+    }
+
+    private void recycle(){
+        if(mViewPager != null){
+            InfinitePagerAdapter adapter = (InfinitePagerAdapter)mViewPager.getAdapter();
+            int count = adapter.getRealCount();
+            Log.d("test","mViewPager count:"+count);
+            for(int i = 0; i < count; i++){
+
+            }
+        }
+    }
+
+    private void recycleImageView(ImageView imageView) {
+        if (imageView == null) return;
+        Drawable drawable = imageView.getDrawable();
+        if (drawable != null && drawable instanceof BitmapDrawable) {
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+            Bitmap bitmap = bitmapDrawable.getBitmap();
+            if (bitmap != null && !bitmap.isRecycled()) {
+                bitmap.recycle();
+            }
+        }
+    }
+
+    private void recycleViewGroup(ViewGroup layout){
+        if(layout==null) return;
+        Drawable drawable = layout.getBackground();
+        if (drawable != null && drawable instanceof BitmapDrawable) {
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+            Bitmap bitmap = bitmapDrawable.getBitmap();
+            if (bitmap != null && !bitmap.isRecycled()) {
+                bitmap.recycle();
+            }
+        }
+        synchronized(layout){
+            for (int i = 0; i < layout.getChildCount(); i++) {
+                View subView = layout.getChildAt(i);
+                if (subView instanceof ViewGroup) {
+                    recycleViewGroup((ViewGroup) subView);
+                } else {
+                    if (subView instanceof ImageView) {
+                        recycleImageView((ImageView)subView);
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -163,5 +215,10 @@ public class WatchDials extends FrameLayout {
         mViewPager.setPageTransformer(true, new GalleryTransformer());
         mViewPager.setPageMargin(-Utils.px2dip(mContext,50));
         mViewPager.setOffscreenPageLimit(3);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
     }
 }

@@ -240,6 +240,10 @@ public class NetworkController extends BroadcastReceiver {
         mLastLocale = mContext.getResources().getConfiguration().locale;
     }
 
+    public void unregisterReceiver() {
+        mContext.unregisterReceiver(this);
+    }
+
     public boolean hasMobileDataFeature() {
         return mHasMobileDataFeature;
     }

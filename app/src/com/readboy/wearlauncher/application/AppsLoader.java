@@ -242,11 +242,6 @@ public class AppsLoader extends AsyncTaskLoader<ArrayList<AppInfo>>
     @Override
     public void onPackageRemoved(String packageName, UserHandleCompat user) {
         this.onContentChanged();
-
-        //TODO:更新 选择的应用
-        mContext.getContentResolver().delete(LauncherSettings.MainApp.CONTENT_URI,
-                "packageName like ?",
-                new String[]{packageName});
     }
 
     @Override

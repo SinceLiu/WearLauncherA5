@@ -28,17 +28,19 @@ import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.readboy.wearlauncher.application.AppInfo;
 import com.readboy.wearlauncher.battery.BatteryController;
 import com.readboy.wearlauncher.dialog.ClassDisableDialog;
-import com.readboy.wearlauncher.fragment.NormalFragment;
 import com.readboy.wearlauncher.utils.Utils;
 import com.readboy.wearlauncher.utils.WatchController;
 import com.readboy.wearlauncher.view.DaialParentLayout;
@@ -70,7 +72,6 @@ public class Launcher extends FragmentActivity implements BatteryController.Batt
 
     private GestureView mGestureView;
     DialBaseLayout mLowDialBaseLayout;
-    private LauncherSharedPrefs mSharedPrefs;
     private LayoutInflater mInflater;
     private ViewPager mViewpager;
     private ViewPagerAdpater mViewPagerAdpater;
@@ -82,6 +83,7 @@ public class Launcher extends FragmentActivity implements BatteryController.Batt
     int mTouchSlopSquare;
     int mViewPagerScrollState = ViewPager.SCROLL_STATE_IDLE;
     private int mWatchType;
+    private Toast mToast;
 
     WatchController mWatchController;
     BatteryController mBatteryController;
@@ -101,36 +103,41 @@ public class Launcher extends FragmentActivity implements BatteryController.Batt
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launcher);
+        //screen width:240、height:240,density:0.75,densityDpi:120
 
         mFragmentManager = getSupportFragmentManager();
-
-        DisplayMetrics metric = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metric);
-        int width = metric.widthPixels;  // 屏幕宽度（像素）
-        int height = metric.heightPixels;  // 屏幕高度（像素）
-        float density = metric.density;  // 屏幕密度（0.75 / 1.0 / 1.5）
-        int densityDpi = metric.densityDpi;  // 屏幕密度DPI（120 / 160 / 240）
-        Log.v(TAG,"screen width:"+width+"、height:"+height+",density:"+density+",densityDpi:"+densityDpi);
-        //screen width:240、height:240,density:0.75,densityDpi:120
         ViewConfiguration configuration = ViewConfiguration.get(Launcher.this);
         int touchSlop = configuration.getScaledTouchSlop();
         mTouchSlopSquare = touchSlop * 20;
 
         mApplication = (LauncherApplication) getApplication();
-        mSharedPrefs = mApplication.getSharedPrefs();
         mInflater = LayoutInflater.from(this);
-        mWatchType = mSharedPrefs.getWatchType();
+        mWatchType = LauncherSharedPrefs.getWatchType(this);
         mBatteryController = new BatteryController(this);
         mBatteryController.addStateChangedCallback(this);
+
         mWatchController = mApplication.getWatchController();
         mWatchController.addClassDisableChangedCallback(this);
-//        if(isGrantedPermissions(sPermissions)){
-//            switchToFragment(NormalFragment.class.getName(),null,true,true);
-//        }
 
         mGestureView = (GestureView) findViewById(R.id.content_container);
         mGestureView.setGestureListener(this);
         mLowDialBaseLayout = (DialBaseLayout) findViewById(R.id.low);
+        mLowDialBaseLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN){
+                    if(mToast == null){
+                        mToast = Toast.makeText(Launcher.this,R.string.notice_low_power_for_phone,Toast.LENGTH_SHORT);
+                        mToast.setGravity(Gravity.CENTER,0,0);
+                        TextView textView = (TextView) mToast.getView().findViewById(android.R.id.message);
+                        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP,22);
+                    }
+                    mToast.setText(R.string.notice_low_power_for_phone);
+                    mToast.show();
+                }
+                return true;
+            }
+        });
 
         mNegativeView = (NegativeScreen) mInflater.inflate(R.layout.negative_screen,null);
 
@@ -138,6 +145,7 @@ public class Launcher extends FragmentActivity implements BatteryController.Batt
         mDaialView.removeAllViews();
         DialBaseLayout childDaialView = (DialBaseLayout) mInflater.inflate(WatchDials.mDialList.get(mWatchType%WatchDials.mDialList.size()), mDaialView, false);
         childDaialView.addChangedCallback();
+        childDaialView.onResume();
         childDaialView.setButtonEnable();
         mDaialView.addView(childDaialView);
         mAppView = (WatchAppGridView) mInflater.inflate(R.layout.watch_app_gridview,null);
@@ -176,8 +184,8 @@ public class Launcher extends FragmentActivity implements BatteryController.Batt
         mViewpager.setOffscreenPageLimit(3);
         mViewpager.setCurrentItem(1);
         OverScrollDecoratorHelper.setUpOverScroll(mViewpager);
-        startPowerAnimService();
         mWatchController.setScreenOffListener(this);
+        //startPowerAnimService();
         //Utils.setFirstBoot(Launcher.this,true);
         if(Utils.isFirstBoot(Launcher.this)){
             InstructionsDialog.showInstructionsDialog(Launcher.this);
@@ -187,6 +195,7 @@ public class Launcher extends FragmentActivity implements BatteryController.Batt
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        ClassDisableDialog.recycle();
         mWatchController.removeClassDisableChangedCallback(this);
         mBatteryController.unregisterReceiver();
         mBatteryController.removeStateChangedCallback(this);
@@ -197,6 +206,7 @@ public class Launcher extends FragmentActivity implements BatteryController.Batt
         super.onPause();
         bIsTouchable = false;
         closeDials(false);
+        dialPasue();
     }
 
     @Override
@@ -204,8 +214,9 @@ public class Launcher extends FragmentActivity implements BatteryController.Batt
         super.onResume();
         bIsTouchable = true;
         LauncherApplication.setTouchEnable(true);
-        requestPermissions(sPermissions);
+        //requestPermissions(sPermissions);
         forceUpdateDate();
+        dialResume();
     }
 
     @Override
@@ -216,22 +227,6 @@ public class Launcher extends FragmentActivity implements BatteryController.Batt
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if(requestCode == PERMISSIONS_REQUEST_CODE){
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                for (int i = 0; i < grantResults.length; i++) {
-//                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-//                        boolean isTip = shouldShowRequestPermissionRationale(permissions[i]);
-//                        if(!isTip){//表明用户已经彻底禁止弹出权限请求
-//                            Toast.makeText(Launcher.this,"请进入权限设置界面设置权限",Toast.LENGTH_LONG).show();
-//                        }else {//表明用户没有彻底禁止弹出权限请求
-//
-//                        }
-//						break;
-//                    }
-//                }
-//            }
-//            if(isGrantedPermissions(sPermissions)){
-//                switchToFragment(NormalFragment.class.getName(),null,true,true);
-//            }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
@@ -285,6 +280,7 @@ public class Launcher extends FragmentActivity implements BatteryController.Batt
                 mGestureView.setVisibility(View.INVISIBLE);
                 mLowDialBaseLayout.setVisibility(View.VISIBLE);
                 mLowDialBaseLayout.addChangedCallback();
+                mLowDialBaseLayout.onResume();
                 mLowDialBaseLayout.setButtonEnable();
                 rwm.setLowPowerMode(true);
                 if(!mPowerManager.isPowerSaveMode()){
@@ -334,7 +330,7 @@ public class Launcher extends FragmentActivity implements BatteryController.Batt
         if(vDistance > mTouchSlopSquare / 5 && bVerticalMove && mViewPagerScrollState == ViewPager.SCROLL_STATE_IDLE){
             ReadboyWearManager rwm = (ReadboyWearManager)Launcher.this.getSystemService(Context.RBW_SERVICE);
             PersonalInfo info = rwm.getPersonalInfo();
-            if(info.isHasSiri() == 1){
+            if(info != null && info.isHasSiri() == 1){
                 Utils.startActivity(Launcher.this,"com.readboy.watch.speech","com.readboy.watch.speech.Main2Activity");
             }
             return true;
@@ -365,7 +361,7 @@ public class Launcher extends FragmentActivity implements BatteryController.Batt
                 WatchDials.getWatchDialsStatus() == WatchDials.ANIMATE_STATE_OPENED){
             mGestureView.setIsGestureDrag(true);
             closeDials(true);
-            mWatchType = mSharedPrefs.getWatchType();
+            mWatchType = LauncherSharedPrefs.getWatchType(Launcher.this);
             setDialFromType(mWatchType);
         }
         return true;
@@ -526,6 +522,30 @@ public class Launcher extends FragmentActivity implements BatteryController.Batt
         }
     }
 
+    private void dialPasue(){
+        if(mLowDialBaseLayout != null && mLowDialBaseLayout.isShown()){
+            mLowDialBaseLayout.onPause();
+        }
+        if(mDaialView != null && mDaialView.isShown()){
+            View view = mDaialView.getChildAt(0);
+            if(view instanceof DialBaseLayout){
+                ((DialBaseLayout)view).onPause();
+            }
+        }
+    }
+
+    private void dialResume(){
+        if(mLowDialBaseLayout != null && mLowDialBaseLayout.isShown()){
+            mLowDialBaseLayout.onResume();
+        }
+        if(mDaialView != null && mDaialView.isShown()){
+            View view = mDaialView.getChildAt(0);
+            if(view instanceof DialBaseLayout){
+                ((DialBaseLayout)view).onResume();
+            }
+        }
+    }
+
     private void forceCloseWakeLock(){
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         PowerManager.WakeLock wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK, "My Tag");
@@ -583,6 +603,7 @@ public class Launcher extends FragmentActivity implements BatteryController.Batt
         mDaialView.removeAllViews();
         DialBaseLayout childDaialView = (DialBaseLayout) mInflater.inflate(WatchDials.mDialList.get(type%WatchDials.mDialList.size()), mDaialView, false);
         childDaialView.addChangedCallback();
+        childDaialView.onResume();
         childDaialView.setButtonEnable();
         mDaialView.addView(childDaialView);
         mViewPagerAdpater.setData(mViewList);

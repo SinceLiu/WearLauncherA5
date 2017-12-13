@@ -32,6 +32,16 @@ public class WatchDialTypeO extends DialBaseLayout {
     }
 
     @Override
+    public void onPause() {
+        mDigitClock.setTimePause();
+    }
+
+    @Override
+    public void onResume() {
+        mDigitClock.setTimeRunning();
+    }
+
+    @Override
     public void addChangedCallback() {
         addDateChangedCallback();
         //mDigitClock.setTimeRunning();
@@ -110,18 +120,6 @@ public class WatchDialTypeO extends DialBaseLayout {
 
     private void setTime(){
         mDigitClock.setCurTime();
-//        TextView hourView = (TextView) findViewById(R.id.hour_tvid);
-//        TextView nimuteView = (TextView) findViewById(R.id.nimute_tvid);
-//        GregorianCalendar time = new GregorianCalendar();
-//        time.setTime(new Date());
-//        int hour = time.get(Calendar.HOUR_OF_DAY);//Calendar.HOUR
-//        int minute = time.get(Calendar.MINUTE);
-////        int second = time.get(Calendar.SECOND);
-////        int am_pm = time.get(Calendar.AM_PM);
-//        String hourFormat = String.format("%02d",hour);
-//        String nimuteFormat = String.format("%02d",minute);
-//        hourView.setText(hourFormat);
-//        nimuteView.setText(nimuteFormat);
     }
 
 }

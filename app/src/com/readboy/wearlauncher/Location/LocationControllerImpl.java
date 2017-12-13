@@ -58,6 +58,10 @@ public class LocationControllerImpl extends BroadcastReceiver implements Locatio
         refreshViews();
     }
 
+    public void unregisterReceiver() {
+        mContext.unregisterReceiver(this);
+    }
+
     /**
      * Add a callback to listen for changes in location settings.
      */
@@ -153,7 +157,6 @@ public class LocationControllerImpl extends BroadcastReceiver implements Locatio
         } else {
             //mStatusBarManager.removeIcon(mSlotLocation);
         }
-	Log.d(TAG,"refreshViews : mAreActiveLocationRequests "+mAreActiveLocationRequests);
         int N = mIconViews.size();
         for (int i=0; i<N; i++) {
             ImageView v = mIconViews.get(i);
@@ -220,4 +223,3 @@ public class LocationControllerImpl extends BroadcastReceiver implements Locatio
         }
     }
 }
-

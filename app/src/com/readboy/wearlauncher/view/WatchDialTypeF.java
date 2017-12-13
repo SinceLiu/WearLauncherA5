@@ -35,8 +35,18 @@ public class WatchDialTypeF extends DialBaseLayout {
     }
 
     @Override
-    public void addChangedCallback() {
+    public void onPause() {
+        mAnalogClock.setTimePause();
+    }
+
+    @Override
+    public void onResume() {
         mAnalogClock.setTimeRunning();
+    }
+
+    @Override
+    public void addChangedCallback() {
+        //mAnalogClock.setTimeRunning();
     }
 
     @Override

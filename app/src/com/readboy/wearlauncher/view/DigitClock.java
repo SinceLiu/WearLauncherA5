@@ -3,6 +3,7 @@ package com.readboy.wearlauncher.view;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
@@ -296,6 +297,10 @@ public class DigitClock extends LinearLayout{
 		updateClock();
 	}
 
+	public void setTimePause(){
+		removeCallbacks(mClockTick);
+	}
+
 	public void setTimeRunning(){
 		post(mClockTick);
 	}
@@ -312,7 +317,7 @@ public class DigitClock extends LinearLayout{
 
 			updateClock();
 
-			DigitClock.this.postDelayed(mClockTick, 500 - currentMillisecond);
+			DigitClock.this.postDelayed(mClockTick, 1000 - currentMillisecond);
 		}
 	};
 }

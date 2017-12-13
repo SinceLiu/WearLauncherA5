@@ -31,12 +31,22 @@ public class WatchDialTypeI extends DialBaseLayout{
     @Override
     public void addChangedCallback() {
         addDateChangedCallback();
-        mDigitClock.setTimeRunning();
+        //mDigitClock.setTimeRunning();
     }
 
     @Override
     public void setButtonEnable() {
 
+    }
+
+    @Override
+    public void onPause() {
+        mDigitClock.setTimePause();
+    }
+
+    @Override
+    public void onResume() {
+        mDigitClock.setTimeRunning();
     }
 
     @Override

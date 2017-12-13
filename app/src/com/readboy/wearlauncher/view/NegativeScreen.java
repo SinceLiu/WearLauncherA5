@@ -137,7 +137,7 @@ public class NegativeScreen extends FrameLayout implements View.OnClickListener 
         }
     }
 
-    public void updateRingerMode(){
+    private void updateRingerMode(){
         AudioManager audio = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
         int ringerMode = audio.getRingerMode();
         int vibrateAndRinging = Settings.System.getInt(mContext.getContentResolver(),Settings.System.VIBRATE_WHEN_RINGING,1);
@@ -156,7 +156,7 @@ public class NegativeScreen extends FrameLayout implements View.OnClickListener 
         mRingerModeView.setVisibility(View.VISIBLE);
     }
 
-    public void updateWeatherMode(){
+    private void updateWeatherMode(){
         String wea = getWeather();
         if(!Utils.isEmpty(wea)){
             mWeatherModeView.setText(wea);
@@ -166,7 +166,7 @@ public class NegativeScreen extends FrameLayout implements View.OnClickListener 
         }
     }
 
-    public void setRingerMode(){
+    private void setRingerMode(){
         AudioManager audio = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
         int ringerMode = audio.getRingerMode();
         int vibrateAndRinging = Settings.System.getInt(mContext.getContentResolver(),Settings.System.VIBRATE_WHEN_RINGING,1);
@@ -196,27 +196,16 @@ public class NegativeScreen extends FrameLayout implements View.OnClickListener 
      * 蓝牙
      */
     private void  initBluetoothController(){
-        BluetoothController.BluetoothChangedCallback mBluetoothChangedCallback = new BluetoothController.BluetoothChangedCallback() {
-
-            @Override
-            public void onBluetoothChanged(boolean enable, int state) {
-                // TODO Auto-generated method stub
-
-            }
-        };
         ImageView bluetoothIconView = (ImageView) findViewById(R.id.btn_id_bluetooth);
         BluetoothController bluetoothEnabler = mApplication.getBluetoothController();
-        bluetoothEnabler.addBluetoothChangedCallback(mBluetoothChangedCallback);
         bluetoothEnabler.addBluetoothIconView(bluetoothIconView);
         bluetoothEnabler.fireCallbacks();
-
     }
 
     /**
      * 闹钟
      */
     private void  initAlarmController(){
-
         ImageView alarmIconView = (ImageView) findViewById(R.id.btn_id_alarm);
         AlarmController alarmController = mApplication.getAlarmController();
         alarmController.addAlarmIconView(alarmIconView);
@@ -248,7 +237,7 @@ public class NegativeScreen extends FrameLayout implements View.OnClickListener 
         watchController.addClassDisableIconView(iconView);
     }
 
-    public String  getWeather(){
+    private String  getWeather(){
         String weather = "";
         try {
             Cursor c = mContext.getContentResolver().query(weatherUri,null,null,null,null);
@@ -257,7 +246,9 @@ public class NegativeScreen extends FrameLayout implements View.OnClickListener 
                 //c.getString(c.getColumnIndex("temperature"));
                 //c.getString(c.getColumnIndex("weather"));
                 //c.getString(c.getColumnIndex("weathercode"));
-                weather = mContext.getResources().getString(R.string.weather_template, c.getString(c.getColumnIndex("temperature")),c.getString(c.getColumnIndex("weather")));
+                weather = mContext.getResources().getString(R.string.weather_template,
+                        c.getString(c.getColumnIndex("temperature")),
+                        c.getString(c.getColumnIndex("weather")));
             }
             if(c != null){
                 c.close();

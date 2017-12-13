@@ -21,10 +21,19 @@ public class WatchDialTypeL extends DialBaseLayout {
         super(context, attrs, defStyle);
     }
 
+    @Override
+    public void onPause() {
+        mAnalogClock.setTimePause();
+    }
+
+    @Override
+    public void onResume() {
+        mAnalogClock.setTimeRunning();
+    }
 
     @Override
     public void addChangedCallback() {
-        mAnalogClock.setTimeRunning();
+        //mAnalogClock.setTimeRunning();
     }
 
     @Override

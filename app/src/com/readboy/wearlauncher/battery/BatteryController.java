@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 @SuppressLint("NewApi") 
 public class BatteryController extends BroadcastReceiver {
-    private static final String TAG = "BatteryController";
+    private static final String TAG = "Launcher.BatteryController";
     private static final boolean DEBUG = true;
 
     private final ArrayList<BatteryStateChangeCallback> mChangeCallbacks = new ArrayList<BatteryStateChangeCallback>();
@@ -31,15 +31,18 @@ public class BatteryController extends BroadcastReceiver {
     public BatteryController(Context context) {
         mContext = context;
         mPowerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        registerReceiver();
+        updatePowerSave();
+    }
 
+    public void registerReceiver(){
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_BATTERY_CHANGED);
 //        filter.addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED);
 //        filter.addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGING);
         mContext.registerReceiver(this, filter);
-
-        updatePowerSave();
     }
+
     public void unregisterReceiver(){
         mContext.unregisterReceiver(this);
     }
