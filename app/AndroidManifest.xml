@@ -40,6 +40,10 @@
     <uses-permission android:name="android.permission.MANAGE_ACTIVITY_STACKS" />
     <uses-permission android:name="android.permission.START_TASKS_FROM_RECENTS" />
 
+
+    <uses-permission android:name="com.qualcomm.permission.QCOM_DIAG"/>
+    <uses-permission android:name="com.qualcomm.permission.QCOM_RADIO"/>
+
     <!--<uses-feature android:name="android.hardware.type.watch"/>-->
     <application
         android:name=".LauncherApplication"
@@ -49,6 +53,11 @@
         android:supportsRtl="true"
         android:largeHeap="true"
         android:theme="@style/AppTheme">
+
+        <uses-library
+            android:name="com.readboy.nv" >
+        </uses-library>
+
         <activity
             android:name=".Launcher"
             android:clearTaskOnLaunch="true"

@@ -48,6 +48,12 @@ public class Utils {
         return Settings.Global.getInt(context.getContentResolver(),
                 Settings.Global.AIRPLANE_MODE_ON, 0) != 0;
     }
+
+    public static void checkAndDealWithAirPlanMode(Context context){
+        if (!isAirplaneModeOn(context)) return;
+        Intent intent = new Intent("com.readboy.settings.AirplaneModeReset");
+        context.startActivity(intent);
+    }
 	
 	public static boolean isRadioAllowed(Context context, String type) {
         if (!Utils.isAirplaneModeOn(context)) {
@@ -111,6 +117,7 @@ public class Utils {
         boolean isEnable = ((LauncherApplication)LauncherApplication.getApplication()).getWatchController().isNowEnable();
         if(isEnable && !ableEnterList.contains(pkg)){
             ClassDisableDialog.showClassDisableDialog(context);
+            checkAndDealWithAirPlanMode(context);
             return;
         }
         try {

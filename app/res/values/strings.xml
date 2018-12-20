@@ -20,12 +20,14 @@
     <string name="notice_low_power">电量低 请尽快充电</string>
     <string name="notice_low_power_for_phone">电量低，只能使用电话功能</string>
 
+    <string name="sim_name_unknow">未知运营商</string>
     <string name="sim_name_mobile">中国移动</string>
     <string name="sim_name_unicom">中国联通</string>
     <string name="sim_name_telecom">中国电信</string>
 
     <string name="instruction_title">Hello !</string>
-    <string name="instruction_content">欢迎使用读书郎智能手表，手表需要获得以下权限：</string>
+    <!--<string name="instruction_content">欢迎使用读书郎智能手表，手表需要获得以下权限：</string>-->
+    <string name="instruction_content">欢迎使用读书郎电话手表，手表需要获得以下权限：</string>
     <string name="instruction_li">1. 拨打电话、发送短信\n2. 获取位置信息\n3. 访问网络\n4. 打开、关闭蓝牙</string>
 
     <string name="weather_template" translatable="false">%s°C %s</string>

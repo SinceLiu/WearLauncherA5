@@ -29,8 +29,9 @@ LOCAL_STATIC_JAVA_LIBRARIES := \
     android-support-v7-recyclerview \
     android-support-v7-palette \
     android-support-v13
-    
+
 LOCAL_JAVA_LIBRARIES := telephony-common
+LOCAL_JAVA_LIBRARIES += readboynv
 LOCAL_JAVA_LIBRARIES += ims-common
 
 LOCAL_SRC_FILES := \

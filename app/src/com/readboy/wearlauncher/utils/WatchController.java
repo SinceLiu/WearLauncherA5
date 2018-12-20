@@ -68,6 +68,14 @@ public class WatchController extends BroadcastReceiver {
             "Jan", "Feb", "Mar", "Apr",
             "May", "Jun", "Jul", "Aug",
             "Sep", "Oct", "Nov", "Dec"};
+
+    public static final String[] WEEK_NAME_EN_LONG = new String[]{
+            "Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"};
+    public static final String MONTHS_NAME_EN_LONG[] = {
+            "January", "February", "March", "April",
+            "May", "June", "July", "August",
+            "September", "October", "November", "December"};
+
     private ArrayList<ImageView> mClassDisableIconViews = new ArrayList<ImageView>();
 
     Context mContext;
@@ -118,7 +126,9 @@ public class WatchController extends BroadcastReceiver {
     }
     private ArrayList<CallUnreadChangedCallback> mCallUnreadChangedCallback = new ArrayList<>();
     public void addCallUnreadChangedCallback(CallUnreadChangedCallback cb){
-        mCallUnreadChangedCallback.add(cb);
+        if (!mCallUnreadChangedCallback.contains(cb)){
+            mCallUnreadChangedCallback.add(cb);
+        }
         cb.onCallUnreadChanged(mMissCallCount);
     }
     public void removeCallUnreadChangedCallback(CallUnreadChangedCallback cb){

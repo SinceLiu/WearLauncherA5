@@ -73,13 +73,14 @@ public class AppsLoader extends AsyncTaskLoader<ArrayList<AppInfo>>
         {
             add("com.android.dialer");
             add("com.readboy.wetalk");
-            add("com.readboy.pedometer");
             add("com.readboy.wordstudy");
-            add("com.mediatek.camera");
+            add("com.android.settings");
             add("com.readboy.findfriend");
+            add("com.readboy.pedometer");
+            add("com.mediatek.camera");
+            add("com.android.gallery3d");
             add("com.readboy.wear.rbsos");
 
-            add("com.android.settings");
             add("com.readboy.alarmclock");
             add("com.readboy.wearsettings");
             add("com.android.contacts");
@@ -110,8 +111,7 @@ public class AppsLoader extends AsyncTaskLoader<ArrayList<AppInfo>>
     }
 
     private void removeExcludedPackages(List<ResolveInfo> pacList) {
-        List<String> excludePackageList = Arrays.asList(mContext.getResources().getStringArray(
-        R.array.excludePackageList));
+        List<String> excludePackageList = Arrays.asList(mContext.getResources().getStringArray(R.array.excludePackageList));
         File file = new File(Environment.getExternalStorageDirectory().getPath() + File.separator + "lacheolauncher.test");
         if(file.exists() && file.isFile()){
             try {
