@@ -12,10 +12,12 @@ import android.util.Log;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import android.os.SystemProperties;
 
 @SuppressLint("NewApi") 
 public class BatteryController extends BroadcastReceiver {
     private static final String TAG = "Launcher.BatteryController";
+    public static final String PMU_WRONG = "persist.sys.pmu.wrong";
     private static final boolean DEBUG = true;
 
     private final ArrayList<BatteryStateChangeCallback> mChangeCallbacks = new ArrayList<BatteryStateChangeCallback>();
@@ -77,7 +79,12 @@ public class BatteryController extends BroadcastReceiver {
                     BatteryManager.BATTERY_STATUS_UNKNOWN);
             mCharged = status == BatteryManager.BATTERY_STATUS_FULL;
             mCharging = mCharged || status == BatteryManager.BATTERY_STATUS_CHARGING;
-
+            //PMU异常时，不显示充电状态
+            String pmuWrong = android.os.SystemProperties.get(PMU_WRONG);
+            if("1".equals(pmuWrong)){
+                Log.e("BatteryController","pmuWrong :"+pmuWrong);
+                mCharging = false;
+            }
             fireBatteryLevelChanged();
         } /*else if (action.equals(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)) {
             updatePowerSave();

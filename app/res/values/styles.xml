@@ -1,11 +1,8 @@
 <resources>
 
     <!-- Base application theme. -->
-    <!--<style name="AppTheme" parent="android:Theme.Wallpaper.NoTitleBar.Fullscreen">-->
-    <style name="AppTheme" parent="@android:style/Theme.DeviceDefault.NoActionBar">
-        <item name="android:windowBackground">@android:color/black</item>
+    <style name="AppTheme" parent="android:Theme.Wallpaper.NoTitleBar.Fullscreen">
         <item name="android:windowSwipeToDismiss">false</item>
-        <item name="android:windowShowWallpaper">true</item>
         <!-- Customize your theme here. -->
         <!--<item name="colorPrimary">@color/colorPrimary</item>-->
         <!--<item name="colorPrimaryDark">@color/colorPrimaryDark</item>-->

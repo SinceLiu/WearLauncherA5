@@ -61,6 +61,7 @@ import android.app.readboy.ReadboyWearManager;
 import android.app.readboy.PersonalInfo;
 
 import com.readboy.nv.NvJniItems;
+import android.os.SystemProperties;
 
 public class Launcher extends FragmentActivity implements BatteryController.BatteryStateChangeCallback,
         GestureView.MyGestureListener, WatchAppGridView.OnClickItemListener, LoaderManager.LoaderCallbacks<ArrayList<AppInfo>>,WatchController.ClassDisableChangedCallback,
@@ -105,6 +106,9 @@ public class Launcher extends FragmentActivity implements BatteryController.Batt
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
+    public static final String PMU_WRONG = "persist.sys.pmu.wrong";
+    public static final String PMU_CONTROL = "persist.sys.pmu.control";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -126,6 +130,17 @@ public class Launcher extends FragmentActivity implements BatteryController.Batt
 
         mWatchController = mApplication.getWatchController();
         mWatchController.addClassDisableChangedCallback(this);
+
+        //PMU异常
+        String pmuWrong = android.os.SystemProperties.get(PMU_WRONG);
+        String pmuControl = android.os.SystemProperties.get(PMU_CONTROL);
+        if( "1".equals(pmuWrong) && "1".equals(pmuControl)){
+            Log.e(TAG,"PMU异常");
+            Intent intent = new Intent();
+            intent.setAction("com.readboy.floatwindow.action.WRONG");
+            intent.setPackage("com.readboy.floatwindow");
+            startService(intent);
+        }
 
         mGestureView = (GestureView) findViewById(R.id.content_container);
         mGestureView.setGestureListener(this);
@@ -167,7 +182,6 @@ public class Launcher extends FragmentActivity implements BatteryController.Batt
         mViewList.add(mAppView);
         loadApps(false);
         mViewpager = (ViewPager) findViewById(R.id.viewpager);
-        mViewpager.setPageTransformer(false,null);
         mViewpager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
