@@ -115,6 +115,7 @@
             android:layout_marginLeft="5px" />
 
         <com.readboy.wearlauncher.battery.BatteryLevelImageView
+            android:id="@+id/iv_battery"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5px"

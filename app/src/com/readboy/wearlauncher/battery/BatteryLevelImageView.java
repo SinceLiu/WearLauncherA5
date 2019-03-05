@@ -5,9 +5,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.readboy.wearlauncher.R;
@@ -15,16 +19,27 @@ import com.readboy.wearlauncher.R;
 public class BatteryLevelImageView extends ImageView implements BatteryController.BatteryStateChangeCallback{
 
     private BatteryController mBatteryController;
-	private Context mContext;
-	private int mLastLevel = -1;
-	private int mLevel = -1;
-	private int mAnimOffset;
-	private boolean mCharging;
-	private boolean mPluggedIn;
-	private static final int ADD_LEVEL = 10;
-	private static final int ANIM_DURATION = 500;
-	private static final int FULL = 96;
-	private Handler mHandler = new Handler();
+    private Context mContext;
+    private int mLevel = -1;
+    private int mAnimOffset;
+    private boolean mCharging;
+    private boolean mPluggedIn;
+    private static final int ADD_LEVEL = 10;
+    private static final int ANIM_DURATION = 500;
+    private static final int FULL = 96;
+    private Handler mHandler = new Handler();
+    private Bitmap chargingBitmap;
+    private Bitmap bitmap;
+    private Bitmap emptyBitmap;
+    private Bitmap chargingFullBitmap;
+    private Bitmap fullBitmap;
+    private Bitmap lowBitmap;
+    private int emptyBitmapWidth;
+    private int emptyBitmapHeight;
+    private Canvas chargingCanvas;
+    private Canvas canvas;
+    private Rect rect;
+    private Paint paint;
 
 	public BatteryLevelImageView(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -32,18 +47,18 @@ public class BatteryLevelImageView extends ImageView implements BatteryControlle
 		mContext = context;
 	}
 
-	private final Runnable mInvalidate = new Runnable() {
-		@Override
-		public void run() {
-			final int level = updateChargingAnimLevel();
-			setBackgroundResource(0);
-			if(mPluggedIn&&mCharging){
-				setImageBitmap(createBatteryChargingImage(level));
-			}else {
-				setImageBitmap(createBatteryImage(level));
-			}
-		}
-	};
+    private final Runnable mInvalidate = new Runnable() {
+        @Override
+        public void run() {
+            final int level = updateChargingAnimLevel();
+            setBackgroundResource(0);
+            if (mPluggedIn && mCharging) {
+                setImageBitmap(createBatteryChargingImage(level));
+            } else if (level > 0) {
+                setImageBitmap(createBatteryImage(level));
+            }
+        }
+    };
 
 	@Override
 	public void onBatteryLevelChanged(int level, boolean pluggedIn,
@@ -85,46 +100,41 @@ public class BatteryLevelImageView extends ImageView implements BatteryControlle
 		return curLevel;
 	}
 
-	private Bitmap createBatteryChargingImage(int level){
-		Bitmap  empty = BitmapFactory.decodeResource(this.getContext().getResources(), R.drawable.battery_nor_empty);
-		int width = empty.getWidth();
-		int high = empty.getHeight();
-		Bitmap bitmap = Bitmap.createBitmap(empty.getWidth(), empty.getHeight(),empty.getConfig());
-		Canvas canvas = new Canvas(bitmap);
-		canvas.drawBitmap(empty, new Matrix(), null);
-		int left = 0;
-		int top = 0;
-		int right = (width*22/30) * level / 100 + width*3/30;
-		int bottom = high;
-		Rect rect = new Rect(left,top,right,bottom);
-		Bitmap  full = BitmapFactory.decodeResource(this.getContext().getResources(), R.drawable.battery_charging_full);
-		canvas.drawBitmap(full, rect, rect, null);
+    public void init() {
+        emptyBitmap = BitmapFactory.decodeResource(this.getContext().getResources(), R.drawable.battery_nor_empty);
+        fullBitmap = BitmapFactory.decodeResource(this.getContext().getResources(), R.drawable.battery_nor_full);
+        chargingFullBitmap = BitmapFactory.decodeResource(this.getContext().getResources(), R.drawable.battery_charging_full);
+        lowBitmap = BitmapFactory.decodeResource(this.getContext().getResources(), R.drawable.battery_nor_low);
+        emptyBitmapWidth = emptyBitmap.getWidth();
+        emptyBitmapHeight = emptyBitmap.getHeight();
+        chargingBitmap = Bitmap.createBitmap(emptyBitmapWidth, emptyBitmapHeight, emptyBitmap.getConfig());
+        chargingCanvas = new Canvas(chargingBitmap);
+        rect = new Rect(0, 0, 0, emptyBitmapHeight);
+        bitmap = Bitmap.createBitmap(emptyBitmapWidth, emptyBitmapHeight, emptyBitmap.getConfig());
+        canvas = new Canvas(bitmap);
+        paint = new Paint();
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+    }
 
-		return bitmap;
-	}
+    private Bitmap createBatteryChargingImage(int level) {
+        chargingCanvas.drawPaint(paint);  //清空画布
+        chargingCanvas.drawBitmap(emptyBitmap, new Matrix(), null);
+        rect.right = (emptyBitmapWidth * 22 / 30) * level / 100 + emptyBitmapWidth * 3 / 30;
+        chargingCanvas.drawBitmap(chargingFullBitmap, rect, rect, null);
+		return chargingBitmap;
+    }
 
-	private Bitmap createBatteryImage(int level){
-		Bitmap  empty = BitmapFactory.decodeResource(this.getContext().getResources(), R.drawable.battery_nor_empty);
-		int width = empty.getWidth();
-		int high = empty.getHeight();
-		Bitmap bitmap = Bitmap.createBitmap(empty.getWidth(), empty.getHeight(),empty.getConfig());
-		Canvas canvas = new Canvas(bitmap);
-		canvas.drawBitmap(empty, new Matrix(), null);
-		int left = 0;
-		int top = 0;
-		int right = (width*22/30) * level / 100 + width*3/30;
-		int bottom = high;
-		Rect rect = new Rect(left,top,right,bottom);
-		if(level < 20){
-			Bitmap  low = BitmapFactory.decodeResource(this.getContext().getResources(), R.drawable.battery_nor_low);
-			canvas.drawBitmap(low, rect, rect, null);
-		}else {
-			Bitmap  full = BitmapFactory.decodeResource(this.getContext().getResources(), R.drawable.battery_nor_full);
-			canvas.drawBitmap(full, rect, rect, null);
-		}
-
-		return bitmap;
-	}
+    private Bitmap createBatteryImage(int level) {
+        canvas.drawPaint(paint);
+        canvas.drawBitmap(emptyBitmap, new Matrix(), null);
+        rect.right = (emptyBitmapWidth * 22 / 30) * level / 100 + emptyBitmapWidth * 3 / 30;
+        if (level < 20) {
+            canvas.drawBitmap(lowBitmap, rect, rect, null);
+        } else {
+            canvas.drawBitmap(fullBitmap, rect, rect, null);
+        }
+        return bitmap;
+    }
 
 	@Override
 	public void onPowerSaveChanged() {
@@ -132,25 +142,41 @@ public class BatteryLevelImageView extends ImageView implements BatteryControlle
 		
 	}
 
-    private void setBatteryController(BatteryController batteryController) {
-        mBatteryController = batteryController;
+    public void setBatteryController(int level) {
+        mLevel = level;
+        if (mBatteryController == null) {
+            mBatteryController = new BatteryController(mContext);
+        }
         mBatteryController.addStateChangedCallback(this);
     }
-	@Override
-	public  void  onAttachedToWindow(){
-		super.onAttachedToWindow();
-		BatteryController controller = new BatteryController(getContext());
-		setBatteryController(controller);
-	}
+
+    public void cancelBatteryController() {
+        if (mBatteryController != null) {
+            mBatteryController.removeStateChangedCallback(this);
+            mBatteryController.unregisterReceiver();
+            mBatteryController = null;
+        }
+        mHandler.removeCallbacksAndMessages(null);
+    }
+
+    @Override
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        init();
+    }
 
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        if (mBatteryController != null) {
-            mBatteryController.removeStateChangedCallback(this);
-			mBatteryController.unregisterReceiver();
-        }
-
+        canvas = null;
+        chargingCanvas = null;
+        paint = null;
+        bitmap = null;
+        emptyBitmap = null;
+        fullBitmap = null;
+        lowBitmap = null;
+        chargingBitmap = null;
+        chargingFullBitmap = null;
     }
 
 

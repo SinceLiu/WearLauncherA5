@@ -39,6 +39,10 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
+
+import android.app.readboy.ReadboyWearManager;
+
+
 public class Utils {
 	
 	//Settings.Global.AIRPLANE_MODE_TOGGLEABLE_RADIOS
@@ -114,7 +118,8 @@ public class Utils {
     public static void startActivity(Context context, String pkg, String cls){
         List<String> ableEnterList = Arrays.asList(context.getResources().getStringArray(
                 R.array.ableEnterList));
-        boolean isEnable = ((LauncherApplication)LauncherApplication.getApplication()).getWatchController().isNowEnable();
+        ReadboyWearManager rwm = (ReadboyWearManager)context.getSystemService(Context.RBW_SERVICE);
+        boolean isEnable = rwm.isClassForbidOpen();
         if(isEnable && !ableEnterList.contains(pkg)){
             ClassDisableDialog.showClassDisableDialog(context);
             checkAndDealWithAirPlanMode(context);

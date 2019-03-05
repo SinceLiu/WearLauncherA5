@@ -66,6 +66,7 @@
         <TextView
             android:id="@+id/text_id_dialer_num"
             style="@style/cornerSignTextViewM"
+            android:elevation="10dp"
             android:layout_alignRight="@id/btn_id_dialer"
             android:layout_alignTop="@id/btn_id_dialer"
             android:layout_marginRight="-6px"
@@ -84,6 +85,7 @@
         <TextView
             android:id="@+id/text_id_mss_num"
             style="@style/cornerSignTextViewM"
+            android:elevation="10dp"
             android:layout_alignRight="@id/btn_id_mms"
             android:layout_alignTop="@id/btn_id_mms"
             android:layout_marginRight="-6px"
